@@ -1,0 +1,10 @@
+langchain
+langchain-community
+langchain-core
+beautifulsoup4
+chromadb
+groq
+streamlit
+requests
+python-dotenv
+sentence-transformers
