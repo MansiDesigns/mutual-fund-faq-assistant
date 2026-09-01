@@ -8,3 +8,5 @@ streamlit
 requests
 python-dotenv
 sentence-transformers
+fastapi
+uvicorn

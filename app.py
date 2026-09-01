@@ -1,20 +1,18 @@
 import streamlit as st
 import os
-
-from src.guardrail import classify_intent, get_refusal_message
-from src.rag_pipeline import retrieve_context, generate_factual_answer, post_process_response, get_groq_client
+import requests
 
 st.set_page_config(page_title="Mutual Fund FAQ Assistant", page_icon="📈", layout="centered")
 
 st.title("Mutual Fund FAQ Assistant")
 st.warning("**Disclaimer:** Facts-only. No investment advice.")
 
-# Check API Key
+# Retrieve BACKEND_URL from Streamlit Secrets or Environment Variables
+# Default to localhost for local testing
 try:
-    get_groq_client()
-except Exception as e:
-    st.error("GROQ_API_KEY is missing or invalid. Please check your `.env` file or Streamlit Secrets.")
-    st.stop()
+    BACKEND_URL = st.secrets.get("BACKEND_URL", os.environ.get("BACKEND_URL", "http://localhost:8000"))
+except Exception:
+    BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -52,20 +50,14 @@ if query:
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": query})
 
-    with st.spinner("Classifying and retrieving..."):
-        # 1. Guardrail Intent Classification
-        intent = classify_intent(query)
-        
-        if intent == "ADVISORY":
-            response = get_refusal_message()
-        else:
-            # 2. RAG Pipeline
-            try:
-                retrieved_docs = retrieve_context(query)
-                raw_answer = generate_factual_answer(query, retrieved_docs)
-                response = post_process_response(raw_answer, retrieved_docs)
-            except Exception as e:
-                response = f"An error occurred while fetching information: {e}"
+    with st.spinner("Asking the assistant..."):
+        try:
+            res = requests.post(f"{BACKEND_URL}/query", json={"query": query})
+            res.raise_for_status()
+            data = res.json()
+            response = data.get("response", "No response received.")
+        except requests.exceptions.RequestException as e:
+            response = f"Could not connect to the backend API: {e}\n\nPlease ensure the backend is running and `BACKEND_URL` is set correctly."
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
