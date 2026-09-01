@@ -10,6 +10,7 @@ This document outlines the step-by-step implementation strategy for the Mutual F
 *   **Task 1.1: Project Initialization**
     *   Set up the Python virtual environment.
     *   Install core dependencies (`langchain`, `beautifulsoup4`, `chromadb`, `groq`, `streamlit`, etc.).
+    *   Configure `GROQ_API_KEY=your_groq_api_key_here` in the `.env` file.
 *   **Task 1.2: Web Scraper Development**
     *   Build a script using `BeautifulSoup` to fetch HTML from the 10 Groww mutual fund URLs.
     *   Ensure the script *only* targets these HTML pages (no PDFs/KIMs).
